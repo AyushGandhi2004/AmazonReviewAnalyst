@@ -1,4 +1,4 @@
-const BASE = '/api'
+const BASE = 'https://amazonreviewanalyst-backend.onrender.com'
 
 export async function startAnalysis(yourAsin, competitorAsins) {
   const res = await fetch(`${BASE}/analyze`, {
