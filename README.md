@@ -59,6 +59,10 @@ amazon-review-analyzer/
 
 ## Setup
 
+### Backend runtime note
+
+The backend embeddings pipeline uses SentenceTransformers with the default PyTorch backend, so TensorFlow is not required for deployment.
+
 ### 1. Clone and install dependencies
 
 ```bash
