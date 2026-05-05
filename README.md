@@ -121,13 +121,3 @@ curl -N http://localhost:8000/api/progress/<run_id>
 curl http://localhost:8000/api/report/<run_id>
 ```
 
-## Build Phases
-
-- [x] **Phase 1** — Foundation: folder structure, config, models, validators, FastAPI skeleton
-- [ ] **Phase 2** — Scraping: ScrapingBee + Apify integration
-- [ ] **Phase 3** — RAG pipeline: embeddings + ChromaDB queries
-- [ ] **Phase 4** — LLM chains: Groq + LangChain analysis
-- [ ] **Phase 5** — FastAPI integration: full end-to-end pipeline
-- [ ] **Phase 6** — Streamlit UI
-- [ ] **Phase 7** — PDF generation
-- [ ] **Phase 8** — React frontend
