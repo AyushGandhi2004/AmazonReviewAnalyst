@@ -25,7 +25,8 @@ langchain-chroma>=0.1.4
 
 # Embeddings
 sentence-transformers>=3.2.1
-tf-keras>=2.16.0              # required when keras>=3 is present (transformers compatibility)
+tensorflow==2.16.1
+tf-keras==2.16.0             # required when keras>=3 is present (transformers compatibility)
 
 # Vector store
 chromadb>=0.5.18
