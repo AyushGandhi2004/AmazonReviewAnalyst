@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Amazon Competitor Analysis Report</title>
+  <style>
+    /* All styles inline — no external CDN, required for offline PDF use */
+    /* CSS is restricted to properties supported by xhtml2pdf (no flex/grid) */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #1a1a1a; padding: 32px; }
+    h1 { font-size: 22px; color: #e47911; margin-bottom: 4px; }
+    h2 { font-size: 16px; color: #333; margin: 24px 0 8px; border-bottom: 2px solid #e47911; padding-bottom: 4px; }
+    h3 { font-size: 13px; color: #555; margin: 16px 0 4px; }
+    p  { margin-bottom: 8px; line-height: 1.5; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th { background: #e47911; color: #fff; padding: 6px 8px; text-align: left; }
+    td { padding: 5px 8px; border-bottom: 1px solid #eee; }
+    tr:nth-child(even) td { background: #f9f9f9; }
+    ul { padding-left: 20px; margin-bottom: 8px; }
+    ol { padding-left: 20px; margin-bottom: 8px; }
+    li { margin-bottom: 3px; }
+    .badge { display: inline; padding: 2px 6px; font-size: 10px; font-weight: bold; }
+    .badge-high   { background: #ffcccc; color: #cc0000; }
+    .badge-medium { background: #fff3cc; color: #996600; }
+    .badge-low    { background: #ccffcc; color: #006600; }
+    .badge-product { background: #dde7ff; color: #0033cc; }
+    .badge-listing { background: #ffe4cc; color: #994400; }
+    .badge-pricing { background: #e4ccff; color: #660099; }
+    .card { border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; }
+    .meta-row { font-size: 11px; color: #666; margin-top: 4px; }
+    .meta-row span { margin-right: 14px; }
+    footer { margin-top: 32px; font-size: 10px; color: #999; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1>Amazon Competitor Analysis Report</h1>
+  <p>Run ID: <strong>{{ report.run_id }}</strong> &nbsp;|&nbsp; Generated: {{ report.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+  <p>Your Product ASIN: <strong>{{ report.your_asin }}</strong> &nbsp;|&nbsp; Competitors: {{ report.competitor_asins | join(', ') or 'None' }}</p>
+
+  <!-- Section 1: Scraped Metadata -->
+  <h2>Section 1 — Product Overview</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th><th>ASIN</th><th>Price</th><th>Rating</th><th>Total Reviews</th><th>BSR</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in report.section_1.products %}
+      <tr>
+        <td>{{ p.title or 'N/A' }}</td>
+        <td>{{ p.asin }}</td>
+        <td>{{ p.price or 'N/A' }}</td>
+        <td>{{ p.star_rating or 'N/A' }}</td>
+        <td>{{ p.total_reviews or 'N/A' }}</td>
+        <td>{{ p.bsr or 'N/A' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Section 2: Per-Product Summaries -->
+  <h2>Section 2 — AI Product Summaries</h2>
+  {% for s in report.section_2.summaries %}
+  <div class="card">
+    <h3>{{ s.product_title }} ({{ s.asin }})</h3>
+    {% if s.overall_reaction %}<p><em>{{ s.overall_reaction }}</em></p>{% endif %}
+    <h3>Strengths</h3>
+    <ul>{% for item in s.strengths %}<li>{{ item }}</li>{% endfor %}</ul>
+    <h3>Weaknesses</h3>
+    <ul>{% for item in s.weaknesses %}<li>{{ item }}</li>{% endfor %}</ul>
+    <h3>Top Praises</h3>
+    <ul>{% for item in s.top_praises %}<li>{{ item }}</li>{% endfor %}</ul>
+    <h3>Top Complaints</h3>
+    <ul>{% for item in s.top_complaints %}<li>{{ item }}</li>{% endfor %}</ul>
+  </div>
+  {% endfor %}
+
+  <!-- Section 3: Comparison -->
+  <h2>Section 3 — Competitive Comparison</h2>
+  <h3>Your Product Advantages</h3>
+  <ul>{% for a in report.section_3.comparison.your_product_advantages %}<li>{{ a }}</li>{% endfor %}</ul>
+
+  {% for comp in report.section_3.comparison.competitor_advantages %}
+  <h3>{{ comp.product_title }} ({{ comp.asin }}) — Their Advantages</h3>
+  <ul>{% for a in comp.advantages %}<li>{{ a }}</li>{% endfor %}</ul>
+  {% endfor %}
+
+  <h3>Market Gaps</h3>
+  <ul>{% for g in report.section_3.comparison.market_gaps %}<li>{{ g }}</li>{% endfor %}</ul>
+
+  <h3>Overall Ranking</h3>
+  <ol>{% for r in report.section_3.comparison.overall_ranking %}<li>{{ r }}</li>{% endfor %}</ol>
+
+  <!-- Section 4: Recommendations -->
+  <!-- Sorted high -> medium -> low by the report assembler -->
+  <h2>Section 4 — Seller Recommendations</h2>
+  {% for rec in report.section_4.recommendations.recommendations %}
+  <div class="card">
+    <span class="badge badge-{{ rec.priority }}">{{ rec.priority | upper }}</span>
+    &nbsp;
+    <span class="badge badge-{{ rec.area }}">{{ rec.area | upper }}</span>
+    <p style="margin-top:8px;"><strong>Action:</strong> {{ rec.action }}</p>
+    <p><strong>Rationale:</strong> {{ rec.rationale }}</p>
+  </div>
+  {% endfor %}
+
+  <!-- Section 5: Review Samples -->
+  <h2>Section 5 — Review Samples</h2>
+  {% for sample_group in report.section_5.samples %}
+  <h3>{{ sample_group.product_title }} ({{ sample_group.asin }})</h3>
+
+  <h3 style="color:#2e7d32;">Five-Star Reviews (★★★★★)</h3>
+  {% for r in sample_group.five_star %}
+  <div class="card">
+    {% if r.title %}<strong>{{ r.title }}</strong><br/>{% endif %}
+    <p>{{ r.text }}</p>
+    <div class="meta-row">
+      <span>Rating: {{ r.rating }}/5</span>
+      {% if r.date %}<span>Date: {{ r.date }}</span>{% endif %}
+      {% if r.verified_purchase %}<span>Verified Purchase</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <h3 style="color:#c62828;">One-Star Reviews (★)</h3>
+  {% for r in sample_group.one_star %}
+  <div class="card">
+    {% if r.title %}<strong>{{ r.title }}</strong><br/>{% endif %}
+    <p>{{ r.text }}</p>
+    <div class="meta-row">
+      <span>Rating: {{ r.rating }}/5</span>
+      {% if r.date %}<span>Date: {{ r.date }}</span>{% endif %}
+      {% if r.verified_purchase %}<span>Verified Purchase</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endfor %}
+
+  <footer>Generated by Amazon Competitor Review Analytics Tool &nbsp;|&nbsp; Powered by Groq + LangChain</footer>
+
+</body>
+</html>
